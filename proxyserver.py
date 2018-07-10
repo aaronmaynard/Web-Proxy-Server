@@ -1,4 +1,5 @@
-import socket
+from socket import *
+import sys
 
 
 #port number is arbituary
@@ -13,38 +14,65 @@ welcomeSocket.bind(server_address)
 #begin listening (argument is number of allowed queued connections)
 welcomeSocket.listen(1)
 
-
-
 #listening loop
 while True:
-    #wait for a connection
+    # Start receiving data from client
     print('WEB PROXY SERVER IS LISTENING')
     
-    #accept() returns a new connection socket along with the address
+    # Accept() returns a new connection socket along with the address
     clientSocket, clientAddress = welcomeSocket.accept()
     print('WEB PROXY SERVER CONNECTED WITH ' + str(clientAddress))
     print('MESSAGE RECEIVED FROM CLIENT:')
     request = clientSocket.recv(2048)
     print(request)
-    # Parse Request 
-    header = request.split("\n")[0].split(" ")
-    for x in header:
-        print(x)
-    # Get HTTP Command    
-    command = header[0]
     
-    print(header[1].split('/'))
+    # Parse Request
+    print request.split()[1]
+    filename = request.split()[1].partition("/")[2]
+    print filename
+    fileExist = "false"
+    filetouse = "/" + filename
+    print filetouse
 
-    if(command == 'GET'):
-        # check cache
-        # open socket and send request if object not in cache
-        
-        # get website the browser is trying to access
-        # port 80 for HTTP
-        address = (header[1].split('/')[1], 80)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect(address)
-        
-    clientSocket.close()
+    # Check if file is already in cache
+    try:
+        f = open(filetouse[1:0], "r")
+        outputdata = f.readlines()
+        fileExist = "true"
 
-    
+        # Cache is found
+        clientSocket.send("HTTP/1.0 200 OK\r\n")
+        clientSocket.send("Content-Type:text/html\r\n")
+        for i n range(0, len(outputdata)):
+            clientSocket.send(outputdata[i])
+        print ('Read from cache")
+
+    # Error handling E404
+    except IOError
+        if fileExist == "false":
+            # Create socket on server
+            c = socket(AF_INET, SOCK_STREAM)
+    hostn = filename.replace("www.","",1)
+    print hostn
+
+    try:
+        # Connect on port 80
+        c.connect(hostn, 80)
+        # Create temp file
+        fileobj = c.makefile('r', 0)
+        fileobj.write("GET " + "http://" + filename + "HTTP/1.0\n\n")
+
+        # Read response into buffer
+        tmpFile = open("./" + filename,"wb")
+        for i in range(0, len(buff)):
+            tmpFile.write(buff[i])
+        clientSocket.send(buff[i])
+    except:
+        print("Illegal Request")
+    else:
+        print('404 Error - File note found')
+           
+clientSocket.close()
+           
+if __name__ == '__main__':
+    main()
