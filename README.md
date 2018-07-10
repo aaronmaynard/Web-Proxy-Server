@@ -10,3 +10,9 @@ For e.g. http://localhost:5005/www.google.com
 
 ### Configuring your Browser
 You can also directly configure your web browser to use your proxy. This depends on your browser. In Internet Explorer, you can set the proxy in Tools > Internet Options > Connections tab > LAN Settings. In Netscape (and derived browsers such as Mozilla), you can set the proxy in Tools > Options > Advanced tab > Network tab > Connection Settings. In both cases you need to give the address of the proxy and the port number that you gave when you ran the proxy server. You should be able to run the proxy and the browser on the same computer without any problem. With this approach, to get a web page using the proxy server, you simply provide the URL of the page you want. For example: http://www.google.com
+
+## Current update | 2:30 PM 7/10/2018
+Polished cache implimentation.  Server running Python 2.7.10  
+Sample Run:  
+
+![TestRun](https://i.imgur.com/mBkvpVm.png)
