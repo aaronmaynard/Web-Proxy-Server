@@ -1,5 +1,5 @@
 import socket
-from urllib2 import urlopen
+
 
 #port number is arbituary
 server_address = ('localhost', 5005)
@@ -33,18 +33,17 @@ while True:
     # Get HTTP Command    
     command = header[0]
     
-    url = 'http://' + str(header[1][1:])
-    print(urlopen(url).read())
-    
+    print(header[1].split('/'))
+
     if(command == 'GET'):
         # check cache
         # open socket and send request if object not in cache
         
-        # Need a way to get the IP for the host so we can 
-        # open a connection socket
-        
-        #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        pass
+        # get website the browser is trying to access
+        # port 80 for HTTP
+        address = (header[1].split('/')[1], 80)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(address)
         
     clientSocket.close()
 
