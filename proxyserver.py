@@ -1,18 +1,21 @@
 from socket import *
 import sys
 
+if len(sys.argv) <= 1:
+  print 'some usage stuff'
+#sys.exit(2)
 
 #port number is arbituary
-server_address = ('localhost', 5005)
+welcomePort = 5005
 
 #create welcoming socket
-welcomeSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+welcomeSocket = socket(AF_INET, SOCK_STREAM)
 
 #bind to the server address
-welcomeSocket.bind(server_address)
+welcomeSocket.bind(("", welcomePort))
 
 #begin listening (argument is number of allowed queued connections)
-welcomeSocket.listen(1)
+welcomeSocket.listen(5)
 
 #listening loop
 while True:
@@ -23,7 +26,7 @@ while True:
     clientSocket, clientAddress = welcomeSocket.accept()
     print('WEB PROXY SERVER CONNECTED WITH ' + str(clientAddress))
     print('MESSAGE RECEIVED FROM CLIENT:')
-    request = clientSocket.recv(2048)
+    request = clientSocket.recv(1024)
     print(request)
     
     # Parse Request
@@ -43,12 +46,12 @@ while True:
         # Cache is found
         clientSocket.send("HTTP/1.0 200 OK\r\n")
         clientSocket.send("Content-Type:text/html\r\n")
-        for i n range(0, len(outputdata)):
+        for i in range(0, len(outputdata)):
             clientSocket.send(outputdata[i])
-        print ('Read from cache")
+        print ('Read from cache')
 
     # Error handling E404
-    except IOError
+    except IOError:
         if fileExist == "false":
             # Create socket on server
             c = socket(AF_INET, SOCK_STREAM)
@@ -76,3 +79,4 @@ clientSocket.close()
            
 if __name__ == '__main__':
     main()
+    
