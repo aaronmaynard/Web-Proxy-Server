@@ -2,7 +2,7 @@ from socket import *
 import sys
 
 if len(sys.argv) <= 1:
-  print 'some usage stuff'
+  print 'Usage : "python proxyserver.py server_ip"\n[server_ip : Address of the proxy server'
 #sys.exit(2)
 
 #port number is arbituary
@@ -79,4 +79,3 @@ clientSocket.close()
            
 if __name__ == '__main__':
     main()
-    
