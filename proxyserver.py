@@ -2,6 +2,8 @@ from socket import *
 import sys
 import re
 import os
+import httplib
+
 
 if len(sys.argv) <= 1:
   print 'Usage : "python proxyserver.py server_ip"\n[server_ip : Address of the proxy server'
@@ -118,19 +120,29 @@ try:
                         if(len(response) > 0):
                             #data = "\r".join(response[response.split('\r').index('\n'):])
                             try:
-                                #dataIndex = response.split('\r').index('\n')                                
-#                                data = response.split('\r')[dataIndex:]
-                                #data = response.split('\f\f')[1]
-                                #file.writelines(data)
-                                print response.split('\r\n')[:2]
-                                data = response.split('\r\n')[2:]
-                                file.writelines(data)
+#                                dataIndex = response.split('\n').index('\r')                                
+#                                data = response.split('\r')[dataIndex+1:]
+                                # drop the line feed 
+#                                data[0] = data[0][1:]
+#                                data = response
+                                # remove the header
+                                temp = response.split('\r\n\r\n')
+                                if len(temp) < 3:
+                                    data = temp[1]
+                                else:
+                                    data = '\r\n\r\n'.join(temp[1:])
+                                file.write(data)
+                                
+#                                data = response.split('\r\n')[2:]
+#                                file.writelines(data)
                                 clientSocket.send(response)
                             except IndexError:
-                                print "Value Error"
-                                print response
+#                                print "*********Value Error***********"
+#                                print response
+#                                print response.split('\n')
                                 file.write(response)
                                 clientSocket.send(response)
+                            
                         else:
                             break
             else:
