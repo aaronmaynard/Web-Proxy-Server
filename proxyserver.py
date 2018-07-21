@@ -7,7 +7,10 @@ import os
 def createRequest(host, url, originalRequest):
     try:
         hostInd = url.index(host)
-        url = url[hostInd + len(host):]
+        if len(url[hostInd + len(host):]) < 3:
+            pass
+        else:
+            url = url[hostInd + len(host):]
     except ValueError:
         pass
     httpHeader = "GET " + url + " HTTP/1.1\r\n"
@@ -33,7 +36,7 @@ def createRequest(host, url, originalRequest):
 
 if len(sys.argv) <= 1:
   print 'Usage : "python proxyserver.py server_ip"\n[server_ip : Address of the proxy server'
-#sys.exit(2)
+  sys.exit(2)
 
 serverIP = sys.argv[1]
 
@@ -42,8 +45,10 @@ BUFFER_SIZE = 1048576
 
 #port number is arbituary
 welcomePort = 5005
+# holds names of files sent with special encoding i.e gzip
 encodeFlag = []
 encodeDict = {}
+
 try:
     #create welcoming socket
     welcomeSocket = socket(AF_INET, SOCK_STREAM)
@@ -123,43 +128,49 @@ try:
             if filename in os.listdir("."):
                 # Cache Hit
                 print 'Cache Hit'
-                # Assemble HTTP response 
-                httpHeader = 'HTTP/1.1 200 OK\r\n'
-                if '.jpg' in filename:
-                    httpHeader += 'Content-Type: image/jpeg\r\n'
-                elif 'html' or 'htm' in filename:
-                    httpHeader += 'Content-Type: text/html\r\n'
-                elif '.ico' in filename:
-                    httpHeader += 'Content-Type: image/x-icon\r\n'
-                elif '.css' in filename:
-                    httpHeader += 'Content-Type: text/css\r\n'
-                elif '.js' in filename:
-                    httpHeader += 'Content-Type: application/javascript\r\n'
-                elif '.txt' in filename:
-                    httpHeader += 'Content-Type: text/plain\r\n'
-                else:
-                    httpHeader += 'Content-Type: application/octet-stream\r\n'
-                
-                # See if it was sent using special encoding
-                
-                if filename in encodeFlag:
-                    httpHeader += (encodeDict[filename] + '\r\n') 
-                
-                httpHeader += '\r\n\r\n'
-                
-                print 'HTTP Header sent to Client:'
-                print httpHeader
-                # Add the file data
                 with open(filename, 'r') as file:
+                    # Assemble HTTP response 
+                    httpHeader = 'HTTP/1.1 200 OK\r\n'
+                    if '.jpg' in filename:
+                        httpHeader += 'Content-Type: image/jpeg\r\n'
+                    elif 'html' or 'htm' in filename:
+                        httpHeader += 'Content-Type: text/html\r\n'
+                    elif '.ico' in filename:
+                        httpHeader += 'Content-Type: image/x-icon\r\n'
+                    elif '.css' in filename:
+                        httpHeader += 'Content-Type: text/css\r\n'
+                    elif '.js' in filename:
+                        httpHeader += 'Content-Type: application/javascript\r\n'
+                    elif '.txt' in filename:
+                        httpHeader += 'Content-Type: text/plain\r\n'
+                    else:
+                        httpHeader += 'Content-Type: application/octet-stream\r\n'
+                    
                     # Reading the whole file until it doesn't work 
                     data = file.read()
+                    httpHeader += ('Content-Length: ' + str(len(data)))
+                    
+                    # See if it was sent using special encoding                    
+                    if filename in encodeFlag:
+                        httpHeader += (encodeDict[filename] + '\r\n') 
+                    
+                    # Double space between header and data
+                    httpHeader += '\r\n\r\n'
+                    
+                    print 'HTTP Header sent to Client:'
+                    print httpHeader
+                    # Add the file data    
                     httpHeader += data
-                clientSocket.send(httpHeader)
-                clientSocket.close()
-                continue                                        
+                    
+                    # Send 
+                    clientSocket.send(httpHeader)
+                    clientSocket.close()
+                    continue                                        
         else:
             writefile = False
-            url = "Http://" + url
+            if url[0] == '/':
+                url = url[1:]
+            url = "/"
             # if here then the request was not for a specific file (metadata?)
             
         
@@ -207,9 +218,10 @@ try:
             newRequest = createRequest(host, url, request)
             print 'REQUEST MESSAGE SENT TO ORIGINAL SERVER:'
             print newRequest
-            print 'END OF MESSAGE SENT TO ORIGINAL SERVER.'
+            print 'END OF MESSAGE SENT TO ORIGINAL SERVER.\n'
             forwardSocket.send(newRequest)
             # keep reading and forwarding until nothing server stops
+#            count = 0
             if(writefile):
                 with open(filename, 'w') as file:                
                     while True:
@@ -234,14 +246,18 @@ try:
                                     print 'RESPONSE HEADER FROM ORIGINAL SERVER'
                                     print header
                                     print 'END OF HEADER'
-                                    print '[WRITE FILE INTO CACHE]: ' + filename
+                                    print '[WRITE FILE INTO CACHE]: ' + filename +'\n'
                                     if len(temp) < 3:
                                         data = temp[1]
                                     else:
                                         data = '\r\n\r\n'.join(temp[1:])
                                     file.write(data)
                                 else:
-                                    file.write(data)
+#                                    count += 1
+#                                    print "Received headerless message from server, writing to " + filename
+#                                    with open(str(count) + filename, 'w') as debugF:
+#                                        file.write(response)
+                                    file.write(response)
                                 # See if there is special encoding to note
                                 
                                 for line in response.split('\r\n'):
