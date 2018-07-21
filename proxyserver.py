@@ -107,18 +107,8 @@ try:
         
         print '[PARSE MESSAGE HEADER]:'
         print 'METHOD = ' + method + ', DESTADDRESS = ' + url + ', HTTPVersion = ' + str(request.split()[2])
-        
-        # Discard serverIP:welcomePort
-#        try:
-#            url = url.split(':'.join([str(serverIP), str(welcomePort)]))[1]
-#            # extract host from the remaining URL
-#            print url
-#        except IndexError:
-#            # browser is not putting serverIP:welcomePort into the URL 
-#            # keep going 
-#            pass
-        
-        
+
+                
         writefile = True
         # See if the URL contains a filename 
         filematcher = re.compile("((.?)*\.(jpg|htm|html|png|ico|js|css|gif)$)")
@@ -172,38 +162,6 @@ try:
                 url = url[1:]
             url = "/"
             # if here then the request was not for a specific file (metadata?)
-            
-        
-
-
-#        print request.split()[1]
-#        filename = request.split()[1].partition("/")[2]
-#        print filename
-#        fileExist = "false"
-#        print request.split()[4]
-#        hostIP = gethostbyname(request.split()[4])
-#        print hostIP
-#
-        # Check if file is already in cache
-       # 
-       # try:
-       #     f = open(filetouse[1:0], "r")
-       #     outputdata = f.readlines()
-       #     fileExist = "true"
-       #     # Cache is found
-       #     clientSocket.send("HTTP/1.0 200 OK\r\n")
-       #     clientSocket.send("Content-Type:text/html\r\n")
-       #     for i in range(0, len(outputdata)):
-       #         clientSocket.send(outputdata[i])
-       #     print ('Read from cache')
-
-       # # Error handling E404
-       # except IOError:
-       #     if fileExist == "false":
-       #         # Create socket on server
-       #         c = socket(AF_INET, SOCK_STREAM)
-       # hostn = filename.replace("www.","",1)
-       # print hostn
 
 # Cache miss must send request to original destination
         
@@ -228,18 +186,7 @@ try:
                         forwardSocket.settimeout(0.5) # 500ms
                         response = forwardSocket.recv(BUFFER_SIZE)
                         if(len(response) > 0):
-                            #data = "\r".join(response[response.split('\r').index('\n'):])
-                            try:
-#                                dataIndex = response.split('\n').index('\r')                                
-#                                data = response.split('\r')[dataIndex+1:]
-                                # drop the line feed 
-#                                data[0] = data[0][1:]
-#                                data = response
-                                # remove the header
-#                                textMatcher = re.compile("(.?)*\.(js|css|html)$")
-#                                textMatch = textMatcher.match(filename)
-#                                if textMatch:
-#                                    print response             
+                            try:          
                                 if 'HTTP' in response.split('\r\n\r\n')[0]:
                                     temp = response.split('\r\n\r\n')
                                     header = temp[0]
@@ -253,10 +200,6 @@ try:
                                         data = '\r\n\r\n'.join(temp[1:])
                                     file.write(data)
                                 else:
-#                                    count += 1
-#                                    print "Received headerless message from server, writing to " + filename
-#                                    with open(str(count) + filename, 'w') as debugF:
-#                                        file.write(response)
                                     file.write(response)
                                 # See if there is special encoding to note
                                 
@@ -265,13 +208,8 @@ try:
                                         encodeFlag.append(filename)
                                         encodeDict[filename] = line
                                 
-#                                data = response.split('\r\n')[2:]
-#                                file.writelines(data)
                                 clientSocket.send(response)
                             except IndexError:
-#                                print "*********Value Error***********"
-#                                print response
-#                                print response.split('\n')
                                 file.write(response)
                                 clientSocket.send(response)
                             
@@ -288,31 +226,6 @@ try:
                             break
             forwardSocket.close()
             clientSocket.close()
-#            if "chunked" in response.split('\n')[4].split()[1]:
-#                with open(".buffer", 'w') as buff:
-#                    chunked = True
-#                    while(chunked):
-#                        print response
-#                        buff.writelines(response.split('\n')[9:])
-#                        forwardSocket.send(request)
-#                        response = forwardSocket.recv(BUFFER_SIZE)
-#                        print response.split('\n')[4]
-#                        if "chunked" in response.split('\n')[4]:
-#                            chunked = True
-#                        else:
-#                            chunked = False
-#            else:
-#                print response
-#                clientSocket.send(response)
-            # Create temp file
-#            fileobj = c.makefile('r', 0)
-#            fileobj.write("GET " + "http://" + filename + "HTTP/1.0\n\n")
-
-            # Read response into buffer
-#            tmpFile = open("./" + filename,"wb")
-#            for i in range(0, len(buff)):
-#                tmpFile.write(buff[i])
-#            clientSocket.send(buff[i])
         except timeout:
             print 'timeout'
             forwardSocket.close()
@@ -328,11 +241,7 @@ except KeyboardInterrupt:
     welcomeSocket.close()
     sys.exit()
 
-
     
-    
-    
-
 if __name__ == '__main__':
     main()
 
