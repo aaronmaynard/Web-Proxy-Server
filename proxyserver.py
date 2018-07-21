@@ -2,7 +2,7 @@ from socket import *
 import sys
 import re
 import os
-import httplib
+
 
 def createRequest(host, url, originalRequest):
     try:
@@ -38,7 +38,7 @@ if len(sys.argv) <= 1:
 serverIP = sys.argv[1]
 
 # buffer size
-BUFFER_SIZE = 65536
+BUFFER_SIZE = 1048576
 
 #port number is arbituary
 welcomePort = 5005
@@ -199,6 +199,8 @@ try:
         try:
             forwardSocket = socket(AF_INET, SOCK_STREAM)
             # Connect on port 80
+            if host[0] == '/':
+                host = host[1:]
             hostIP = gethostbyname(host)
             address = (hostIP, 80)
             forwardSocket.connect(address)
