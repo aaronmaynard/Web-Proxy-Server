@@ -8,6 +8,8 @@ def createRequest(host, url, originalRequest):
     try:
         hostInd = url.index(host)
         if len(url[hostInd + len(host):]) < 3:
+            url = 'http://www.' + url
+
             pass
         else:
             url = url[hostInd + len(host):]
@@ -158,18 +160,21 @@ try:
                     continue                                        
         else:
             writefile = False
-            if url[0] == '/':
-                url = url[1:]
-            url = "/"
+#            if url[0] == '/':
+#                url = url[1:]
+            #url = "/"
             # if here then the request was not for a specific file (metadata?)
 
 # Cache miss must send request to original destination
         
         try:
+            print '[LOOK UP IN CACHE]: NOT FOUND, BUILD REQUEST TO SEND TO ORIGINAL SERVER'
             forwardSocket = socket(AF_INET, SOCK_STREAM)
             # Connect on port 80
             if host[0] == '/':
                 host = host[1:]
+            host = host
+            print '[PARSE REQUEST HEADER] HOSTNAME IS ' + host 
             hostIP = gethostbyname(host)
             address = (hostIP, 80)
             forwardSocket.connect(address)
@@ -186,7 +191,16 @@ try:
                         forwardSocket.settimeout(0.5) # 500ms
                         response = forwardSocket.recv(BUFFER_SIZE)
                         if(len(response) > 0):
-                            try:          
+                            try:
+                                if '404' in response.split('\r\n\r\n')[0]:
+                                    temp = response.split('\r\n\r\n')
+                                    header = temp[0]
+                                    print 'RESPONSE HEADER FROM ORIGINAL SERVER'
+                                    print header
+                                    print 'END OF HEADER'
+                                    clientSocket.send(response)
+                                    break
+                                    
                                 if 'HTTP' in response.split('\r\n\r\n')[0]:
                                     temp = response.split('\r\n\r\n')
                                     header = temp[0]
