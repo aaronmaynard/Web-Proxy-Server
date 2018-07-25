@@ -36,6 +36,7 @@ def createRequest(host, url, originalRequest):
     return httpHeader
 
 def createResponse(filename, data):
+    
     httpHeader = 'HTTP/1.1 200 OK\r\n'
     if '.jpg' in filename:
         httpHeader += 'Content-Type: image/jpeg\r\n'
@@ -56,6 +57,17 @@ def createResponse(filename, data):
     httpHeader += '\r\n\r\n'
     print 'RESPONSE HEADER FROM PROXY TO CLIENT'
     print httpHeader
+    print 'END OF HEADER\n'
+    httpHeader += data
+    return httpHeader
+
+def create404(data):
+    httpHeader = 'HTTP/1.1 404 Not Found\r\n'
+    httpHeader += 'Content-Type: text/html; charset=UTF-8\r\n'
+    print 'RESPONSE HEADER FROM PROXY TO CLIENT'
+    print httpHeader
+    print 'END OF HEADER\n'
+    httpHeader += '\r\n\r\n'
     httpHeader += data
     return httpHeader
 
@@ -208,6 +220,7 @@ try:
             forwardSocket.send(newRequest)
             # keep reading and forwarding until nothing server stops
 #            count = 0
+            error404 = False
             if(writefile):
                 with open(filename, 'w') as file:                
                     while True:
@@ -221,7 +234,13 @@ try:
                                     print 'RESPONSE HEADER FROM ORIGINAL SERVER'
                                     print header
                                     print 'END OF HEADER'
+                                    if len(temp) < 3:
+                                        data = temp[1]
+                                    else:
+                                        data = '\r\n\r\n'.join(temp[1:])
+                                    proxy_response = create404(data)
                                     clientSocket.send(response)
+                                    error404 = True
                                     break
                                     
                                 if 'HTTP' in response.split('\r\n\r\n')[0]:
@@ -262,10 +281,16 @@ try:
                             clientSocket.send(response)
                         else:
                             break
-            with open(filename, 'r') as file:
-                data = file.read()
-                proxy_response = createResponse(filename, data)
-                clientSocket.send(proxy_response)
+            if error404:
+                with open(filename, 'r') as file:
+                    data = file.read()
+                    proxy_response = create404(data)
+                    clientSocket.send(proxy_response)
+            else:
+                with open(filename, 'r') as file:
+                    data = file.read()
+                    proxy_response = createResponse(filename, data)
+                    clientSocket.send(proxy_response)
             forwardSocket.close()
             clientSocket.close()
         except timeout:
