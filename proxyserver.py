@@ -35,6 +35,29 @@ def createRequest(host, url, originalRequest):
     httpHeader += '\r\n\r\n'
     return httpHeader
 
+def createResponse(filename, data):
+    httpHeader = 'HTTP/1.1 200 OK\r\n'
+    if '.jpg' in filename:
+        httpHeader += 'Content-Type: image/jpeg\r\n'
+    elif 'html' or 'htm' in filename:
+        httpHeader += 'Content-Type: text/html\r\n'
+    elif '.ico' in filename:
+        httpHeader += 'Content-Type: image/x-icon\r\n'
+    elif '.css' in filename:
+        httpHeader += 'Content-Type: text/css\r\n'
+    elif '.js' in filename:
+        httpHeader += 'Content-Type: application/javascript\r\n'
+    elif '.txt' in filename:
+        httpHeader += 'Content-Type: text/plain\r\n'
+    else:
+        httpHeader += 'Content-Type: application/octet-stream\r\n'
+    httpHeader += ('Content-Length: ' + str(len(data)))
+    # Double space between header and data
+    httpHeader += '\r\n\r\n'
+    print 'RESPONSE HEADER FROM PROXY TO CLIENT'
+    print httpHeader
+    httpHeader += data
+    return httpHeader
 
 if len(sys.argv) <= 1:
   print 'Usage : "python proxyserver.py server_ip"\n[server_ip : Address of the proxy server'
@@ -221,13 +244,14 @@ try:
                                     if 'Content-Encoding:' in line:
                                         encodeFlag.append(filename)
                                         encodeDict[filename] = line
-                                
-                                clientSocket.send(response)
+
                             except IndexError:
                                 file.write(response)
                                 clientSocket.send(response)
                             
                         else:
+                           
+
                             break
             else:
                 while True:
@@ -238,6 +262,10 @@ try:
                             clientSocket.send(response)
                         else:
                             break
+            with open(filename, 'r') as file:
+                data = file.read()
+                proxy_response = createResponse(filename, data)
+                clientSocket.send(proxy_response)
             forwardSocket.close()
             clientSocket.close()
         except timeout:
